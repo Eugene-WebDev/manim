@@ -3,8 +3,8 @@ import random
 from collections import deque
 
 # Maze parameters
-WIDTH, HEIGHT = 75, 75  # Width and height of the maze in cells
-CELL_SIZE = 1
+WIDTH, HEIGHT = 25, 25  # Width and height of the maze in cells
+CELL_SIZE = 0.5
 START, END = (0, 0), (WIDTH - 1, HEIGHT - 1)
 
 def generate_maze(width, height):
@@ -63,29 +63,33 @@ def backtrack_path(visited, start, end):
     path.reverse()
     return path
 
-class MazeVisualization(Scene):
+class MazeVisualization(ThreeDScene):  # Use ThreeDScene for 3D capabilities
     def construct(self):
+        # Set up 3D camera to face the maze directly from above
+        self.set_camera_orientation(phi=180 * DEGREES, theta=0 * DEGREES)
+
         # Generate the maze
         maze = generate_maze(WIDTH, HEIGHT)
-        
+
         # Calculate the offset to center the maze
         x_offset = -WIDTH * CELL_SIZE / 2
         y_offset = -HEIGHT * CELL_SIZE / 2
-        
+        z_offset = 25  # Keep z_offset at 0 for a top-down view
+
         # Draw the maze
         squares = []
         for y, row in enumerate(maze):
             for x, cell in enumerate(row):
                 square = Square(side_length=CELL_SIZE)
-                # Adjust position to center the maze
-                square.move_to(np.array([x * CELL_SIZE + x_offset, y * CELL_SIZE + y_offset, 0]))
+                # Move squares in 3D space
+                square.move_to(np.array([x * CELL_SIZE + x_offset, y * CELL_SIZE + y_offset, z_offset]))
                 if cell == 1:
                     square.set_fill(BLACK, opacity=1)
                 else:
                     square.set_fill(WHITE, opacity=1)
                 squares.append(square)
                 self.add(square)
-        
+
         # Animate the maze drawing
         self.play(*[FadeIn(square) for square in squares], run_time=1)
 
@@ -97,11 +101,11 @@ class MazeVisualization(Scene):
             path_squares = []
             for (x, y) in path:
                 square = Square(side_length=CELL_SIZE)
-                # Adjust position to center the path
-                square.move_to(np.array([x * CELL_SIZE + x_offset, y * CELL_SIZE + y_offset, 0]))
+                # Move path squares in 3D space
+                square.move_to(np.array([x * CELL_SIZE + x_offset, y * CELL_SIZE + y_offset, z_offset + 0.1]))
                 square.set_fill(RED, opacity=1)
                 path_squares.append(square)
                 self.play(FadeIn(square), run_time=0.1)
-        
-        # Wait before ending the scene
+
+        # No need for 3D rotation since the view is fixed from above
         self.wait(2)
